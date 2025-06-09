@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 🎬 초기 추천 영화 데이터 (딕셔너리 형태, 세션에서 유지됨)
+# 📦 세션 상태 초기화
 if "movie_db" not in st.session_state:
     st.session_state.movie_db = {
         "INTJ": ["인터스텔라 🌌", "뷰티풀 마인드 🧠"],
@@ -21,30 +21,46 @@ if "movie_db" not in st.session_state:
         "ESFP": ["쥬라기 월드 🦖", "가디언즈 오브 갤럭시 🚀"]
     }
 
+if "ratings" not in st.session_state:
+    st.session_state.ratings = {}  # {(mbti, movie): rating}
+
 # 🎯 타이틀
-st.title("📽️ MBTI 과학·수학 명작 영화 추천기")
-st.markdown("당신의 **MBTI**를 선택하고, 맞춤 영화 추천도 받고 🎬 직접 영화도 추가해보세요! 🎉")
+st.title("📽️ MBTI 과학·수학 명작 영화 추천기 ⭐")
+
+# 📍 설명
+st.markdown("당신의 **MBTI**에 따라 명작 영화를 추천해드리고, 직접 추가도 가능하며 ⭐별점 평가도 할 수 있어요!")
 
 # 🧠 MBTI 선택
 mbti_list = list(st.session_state.movie_db.keys())
 selected_mbti = st.selectbox("👇 당신의 MBTI를 선택하세요!", [""] + mbti_list)
 
-# ✅ MBTI가 선택된 경우
 if selected_mbti:
-    st.balloons()
-    st.subheader(f"🍿 {selected_mbti} 유형 추천 영화 리스트")
-    
-    # 기존 영화 출력
+    st.subheader(f"🎞️ {selected_mbti} 추천 영화 리스트")
+
+    # 🎬 기존 영화들 출력 + ⭐ 평점 평가
     for movie in st.session_state.movie_db[selected_mbti]:
-        st.write(f"🎞️ {movie}")
+        col1, col2 = st.columns([4, 2])
+        with col1:
+            st.write(f"🍿 {movie}")
+        with col2:
+            key = f"{selected_mbti}_{movie}"
+            st.session_state.ratings[key] = st.slider(
+                "⭐ 평점", 0, 5, st.session_state.ratings.get(key, 0),
+                key=key
+            )
 
     st.markdown("---")
     
-    # 🎁 사용자 입력창: 영화 추가
-    new_movie = st.text_input("➕ 추천 영화 추가하기 (이모지도 자유롭게!)")
-    if st.button("영화 추가"):
+    # ➕ 사용자 영화 추가
+    st.subheader("➕ 영화 직접 추가하기")
+    new_movie = st.text_input("새 영화 제목을 입력하세요 (이모지도 OK!)")
+
+    if st.button("추가"):
         if new_movie.strip():
-            st.session_state.movie_db[selected_mbti].append(new_movie.strip())
-            st.success(f"✅ 영화 '{new_movie}'가 {selected_mbti}에 추가됐어요!")
+            if new_movie not in st.session_state.movie_db[selected_mbti]:
+                st.session_state.movie_db[selected_mbti].append(new_movie)
+                st.success(f"'{new_movie}'이(가) {selected_mbti} 추천 목록에 추가되었어요!")
+            else:
+                st.info(f"'{new_movie}'은(는) 이미 추천 목록에 있어요.")
         else:
-            st.warning("⚠️ 공백은 추가할 수 없어요!")
+            st.warning("❗ 공백은 추가할 수 없어요.")
