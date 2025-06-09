@@ -45,7 +45,9 @@ if selected_mbti:
         with col2:
             key = f"{selected_mbti}_{movie}"
             st.session_state.ratings[key] = st.slider(
-                "⭐ 평점", 0, 5, st.session_state.ratings.get(key, 0),
+                "⭐ 평점", 0.0, 5.0,
+                step=0.5,
+                value=st.session_state.ratings.get(key, 0.0),
                 key=key
             )
 
